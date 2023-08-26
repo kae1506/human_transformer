@@ -177,3 +177,27 @@ class Transformer(nn.Module):
       idx_next = torch.multinomial(logits, num_samples=1) # form a distribution from softmaxed vector and sample from the formed distribution
       idx = torch.cat([idx, idx_next], dim=1)
     return idx
+
+model = Transformer()
+device = 'cpu'
+model = model.to(device)
+
+optimizer = torch.optim.Adam(model.parameters(), lr=0.000001)
+
+max_iters = 2000
+eval_interval = 200
+
+for i in range(max_iters):
+
+    x, y = get_batch('train')
+
+    logits, loss = model(x,y)
+    optimizer.zero_grad(set_to_none=True)
+    loss.backward()
+    optimizer.step()
+
+    if i % eval_interval == 0:
+        print(f"step: {i}, loss : {loss}")
+    
+context = torch.zeros((1,1), dtype=torch.long, device=device)
+print(decode(model.generate(context, max_new_tokens=100)[0].tolist()))
